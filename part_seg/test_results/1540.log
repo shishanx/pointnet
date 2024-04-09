@@ -1,0 +1,12 @@
+Total Point: 2455
+
+Ground Truth: Pistol
+Predict: Rocket
+
+Accuracy: 0.916904
+IoU: 0.801124
+
+IoU details: _2124_2184_2052_2256__0.9095744680851063
+_331_271_199_403__0.49379652605459057
+_0_0_0_0__1
+

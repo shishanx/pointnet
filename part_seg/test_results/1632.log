@@ -1,0 +1,12 @@
+Total Point: 2743
+
+Ground Truth: Table
+Predict: Motorbike
+
+Accuracy: 0.969741
+IoU: 0.931804
+
+IoU details: _2335_2252_2252_2335__0.9644539614561027
+_408_491_408_491__0.8309572301425662
+_0_0_0_0__1
+

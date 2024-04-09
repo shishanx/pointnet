@@ -1,0 +1,11 @@
+Total Point: 2789
+
+Ground Truth: Bag
+Predict: Earphone
+
+Accuracy: 0.911438
+IoU: 0.455719
+
+IoU details: _0_247_0_247__0.0
+_2789_2542_2542_2789__0.9114377913230549
+

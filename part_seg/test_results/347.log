@@ -1,0 +1,12 @@
+Total Point: 2713
+
+Ground Truth: Earphone
+Predict: Laptop
+
+Accuracy: 0.647623
+IoU: 0.229090
+
+IoU details: _2675_1719_1719_2675__0.6426168224299066
+_38_851_38_851__0.04465334900117509
+_0_143_0_143__0.0
+

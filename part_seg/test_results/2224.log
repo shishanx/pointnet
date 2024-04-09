@@ -1,0 +1,13 @@
+Total Point: 2640
+
+Ground Truth: Lamp
+Predict: Guitar
+
+Accuracy: 0.973485
+IoU: 0.494204
+
+IoU details: _0_0_0_0__1
+_2631_2570_2570_2631__0.9768148992778412
+_9_0_0_9__0.0
+_0_70_0_70__0.0
+

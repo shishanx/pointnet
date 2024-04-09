@@ -1,0 +1,11 @@
+Total Point: 2086
+
+Ground Truth: Knife
+Predict: Guitar
+
+Accuracy: 0.918984
+IoU: 0.849821
+
+IoU details: _1008_1177_1008_1177__0.8564146134239592
+_1078_909_909_1078__0.8432282003710575
+

@@ -1,0 +1,13 @@
+Total Point: 2647
+
+Ground Truth: Lamp
+Predict: Mug
+
+Accuracy: 0.968644
+IoU: 0.742161
+
+IoU details: _0_0_0_0__1
+_2647_2564_2564_2647__0.9686437476388364
+_0_0_0_0__1
+_0_83_0_83__0.0
+

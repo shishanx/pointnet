@@ -1,0 +1,12 @@
+Total Point: 2623
+
+Ground Truth: Skateboard
+Predict: Chair
+
+Accuracy: 0.561189
+IoU: 0.295293
+
+IoU details: _537_1119_483_1173__0.4117647058823529
+_2086_989_989_2086__0.4741131351869607
+_0_515_0_515__0.0
+

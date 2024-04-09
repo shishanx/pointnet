@@ -1,0 +1,13 @@
+Total Point: 2821
+
+Ground Truth: Lamp
+Predict: Skateboard
+
+Accuracy: 0.982630
+IoU: 0.495658
+
+IoU details: _0_0_0_0__1
+_2821_2772_2772_2821__0.9826302729528535
+_0_27_0_27__0.0
+_0_22_0_22__0.0
+

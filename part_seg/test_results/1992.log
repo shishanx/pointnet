@@ -1,0 +1,12 @@
+Total Point: 2098
+
+Ground Truth: Rocket
+Predict: Guitar
+
+Accuracy: 0.742135
+IoU: 0.247378
+
+IoU details: _2098_1557_1557_2098__0.7421353670162059
+_0_445_0_445__0.0
+_0_96_0_96__0.0
+

@@ -1,0 +1,11 @@
+Total Point: 2597
+
+Ground Truth: Cap
+Predict: Mug
+
+Accuracy: 0.740855
+IoU: 0.370427
+
+IoU details: _2597_1924_1924_2597__0.7408548324990374
+_0_673_0_673__0.0
+

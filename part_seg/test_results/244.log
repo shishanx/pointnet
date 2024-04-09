@@ -1,0 +1,13 @@
+Total Point: 2564
+
+Ground Truth: Lamp
+Predict: Lamp
+
+Accuracy: 0.985959
+IoU: 0.746490
+
+IoU details: _0_0_0_0__1
+_2564_2528_2528_2564__0.9859594383775351
+_0_0_0_0__1
+_0_36_0_36__0.0
+

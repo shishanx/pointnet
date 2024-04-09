@@ -1,0 +1,12 @@
+Total Point: 2703
+
+Ground Truth: Earphone
+Predict: Guitar
+
+Accuracy: 0.866075
+IoU: 0.500477
+
+IoU details: _2397_2035_2035_2397__0.8489778890279516
+_306_469_306_469__0.652452025586354
+_0_199_0_199__0.0
+

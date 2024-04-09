@@ -1,0 +1,11 @@
+Total Point: 2870
+
+Ground Truth: Cap
+Predict: Laptop
+
+Accuracy: 0.483624
+IoU: 0.241812
+
+IoU details: _2688_1570_1388_2870__0.48362369337979094
+_182_1300_0_1482__0.0
+

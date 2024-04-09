@@ -1,0 +1,13 @@
+Total Point: 2482
+
+Ground Truth: Airplane
+Predict: Skateboard
+
+Accuracy: 0.383965
+IoU: 0.347086
+
+IoU details: _2454_953_953_2454__0.3883455582722086
+_0_0_0_0__1
+_0_1529_0_1529__0.0
+_28_0_0_28__0.0
+

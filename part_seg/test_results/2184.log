@@ -1,0 +1,13 @@
+Total Point: 2581
+
+Ground Truth: Lamp
+Predict: Earphone
+
+Accuracy: 0.734212
+IoU: 0.683553
+
+IoU details: _0_0_0_0__1
+_2581_1895_1895_2581__0.7342115459124371
+_0_0_0_0__1
+_0_686_0_686__0.0
+

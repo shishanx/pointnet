@@ -1,0 +1,12 @@
+Total Point: 2735
+
+Ground Truth: Table
+Predict: Airplane
+
+Accuracy: 0.944059
+IoU: 0.884329
+
+IoU details: _2345_2192_2192_2345__0.9347547974413646
+_390_543_390_543__0.7182320441988951
+_0_0_0_0__1
+

@@ -1,0 +1,12 @@
+Total Point: 2748
+
+Ground Truth: Table
+Predict: Table
+
+Accuracy: 0.979258
+IoU: 0.941249
+
+IoU details: _2432_2375_2375_2432__0.9765625
+_316_373_316_373__0.8471849865951743
+_0_0_0_0__1
+

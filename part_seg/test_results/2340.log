@@ -1,0 +1,12 @@
+Total Point: 2742
+
+Ground Truth: Table
+Predict: Guitar
+
+Accuracy: 0.989424
+IoU: 0.975357
+
+IoU details: _2298_2269_2269_2298__0.9873803307223673
+_444_473_444_473__0.9386892177589852
+_0_0_0_0__1
+

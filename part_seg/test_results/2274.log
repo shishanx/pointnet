@@ -1,0 +1,11 @@
+Total Point: 2832
+
+Ground Truth: Mug
+Predict: Mug
+
+Accuracy: 0.961158
+IoU: 0.480579
+
+IoU details: _0_110_0_110__0.0
+_2832_2722_2722_2832__0.9611581920903954
+

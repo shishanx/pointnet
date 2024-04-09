@@ -1,0 +1,12 @@
+Total Point: 2806
+
+Ground Truth: Table
+Predict: Rocket
+
+Accuracy: 0.987527
+IoU: 0.662509
+
+IoU details: _2771_2806_2771_2806__0.9875267284390592
+_35_0_0_35__0.0
+_0_0_0_0__1
+

@@ -1,0 +1,12 @@
+Total Point: 2610
+
+Ground Truth: Skateboard
+Predict: Mug
+
+Accuracy: 0.850958
+IoU: 0.339820
+
+IoU details: _77_445_77_445__0.17303370786516853
+_2533_2144_2144_2533__0.8464271614686143
+_0_21_0_21__0.0
+

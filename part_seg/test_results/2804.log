@@ -1,0 +1,12 @@
+Total Point: 2824
+
+Ground Truth: Table
+Predict: Laptop
+
+Accuracy: 0.930241
+IoU: 0.889056
+
+IoU details: _808_611_611_808__0.7561881188118812
+_2016_2213_2016_2213__0.9109805693628559
+_0_0_0_0__1
+

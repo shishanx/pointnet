@@ -1,0 +1,13 @@
+Total Point: 2630
+
+Ground Truth: Lamp
+Predict: Laptop
+
+Accuracy: 0.919772
+IoU: 0.479943
+
+IoU details: _0_0_0_0__1
+_2630_2419_2419_2630__0.9197718631178707
+_0_38_0_38__0.0
+_0_173_0_173__0.0
+

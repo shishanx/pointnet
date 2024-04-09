@@ -1,0 +1,11 @@
+Total Point: 2745
+
+Ground Truth: Bag
+Predict: Guitar
+
+Accuracy: 0.790528
+IoU: 0.395264
+
+IoU details: _0_575_0_575__0.0
+_2745_2170_2170_2745__0.7905282331511839
+

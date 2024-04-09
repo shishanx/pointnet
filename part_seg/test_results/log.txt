@@ -1,0 +1,3 @@
+Loading model train_results/trained_models/epoch_10.ckpt
+Model restored.
+0/2874 ...

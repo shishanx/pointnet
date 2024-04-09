@@ -1,0 +1,11 @@
+Total Point: 2652
+
+Ground Truth: Cap
+Predict: Chair
+
+Accuracy: 0.960407
+IoU: 0.480204
+
+IoU details: _2652_2547_2547_2652__0.9604072398190046
+_0_105_0_105__0.0
+

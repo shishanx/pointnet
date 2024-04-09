@@ -1,0 +1,11 @@
+Total Point: 2843
+
+Ground Truth: Mug
+Predict: Laptop
+
+Accuracy: 0.936335
+IoU: 0.468167
+
+IoU details: _0_181_0_181__0.0
+_2843_2662_2662_2843__0.936334857544847
+

@@ -1,0 +1,11 @@
+Total Point: 1994
+
+Ground Truth: Knife
+Predict: Mug
+
+Accuracy: 0.973420
+IoU: 0.948132
+
+IoU details: _1059_1018_1012_1065__0.9502347417840376
+_935_976_929_982__0.9460285132382892
+

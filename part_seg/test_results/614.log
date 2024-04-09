@@ -1,0 +1,11 @@
+Total Point: 2610
+
+Ground Truth: Cap
+Predict: Pistol
+
+Accuracy: 0.760536
+IoU: 0.380268
+
+IoU details: _2517_2078_1985_2610__0.7605363984674329
+_93_532_0_625__0.0
+

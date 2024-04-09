@@ -1,0 +1,13 @@
+Total Point: 2746
+
+Ground Truth: Lamp
+Predict: Chair
+
+Accuracy: 1.000000
+IoU: 1.000000
+
+IoU details: _0_0_0_0__1
+_2746_2746_2746_2746__1.0
+_0_0_0_0__1
+_0_0_0_0__1
+

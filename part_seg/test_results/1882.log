@@ -1,0 +1,12 @@
+Total Point: 2337
+
+Ground Truth: Rocket
+Predict: Motorbike
+
+Accuracy: 0.590073
+IoU: 0.196691
+
+IoU details: _2337_1379_1379_2337__0.5900727428326915
+_0_442_0_442__0.0
+_0_516_0_516__0.0
+

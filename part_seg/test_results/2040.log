@@ -1,0 +1,12 @@
+Total Point: 2881
+
+Ground Truth: Table
+Predict: Earphone
+
+Accuracy: 0.191947
+IoU: 0.186195
+
+IoU details: _990_553_553_990__0.5585858585858586
+_1891_0_0_1891__0.0
+_0_2328_0_2328__0.0
+

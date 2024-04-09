@@ -1,0 +1,12 @@
+Total Point: 2445
+
+Ground Truth: Table
+Predict: Chair
+
+Accuracy: 0.467076
+IoU: 0.489025
+
+IoU details: _1303_0_0_1303__0.0
+_1142_2445_1142_2445__0.4670756646216769
+_0_0_0_0__1
+

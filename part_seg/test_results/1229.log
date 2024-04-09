@@ -1,0 +1,12 @@
+Total Point: 2316
+
+Ground Truth: Rocket
+Predict: Mug
+
+Accuracy: 0.844128
+IoU: 0.281376
+
+IoU details: _2316_1955_1955_2316__0.8441278065630398
+_0_70_0_70__0.0
+_0_291_0_291__0.0
+

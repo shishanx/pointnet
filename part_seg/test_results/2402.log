@@ -1,0 +1,12 @@
+Total Point: 2583
+
+Ground Truth: Pistol
+Predict: Laptop
+
+Accuracy: 0.913666
+IoU: 0.546045
+
+IoU details: _2027_1887_1867_2047__0.912066438690767
+_556_616_493_679__0.7260677466863034
+_0_80_0_80__0.0
+

@@ -1,0 +1,12 @@
+Total Point: 2772
+
+Ground Truth: Table
+Predict: Pistol
+
+Accuracy: 0.974747
+IoU: 0.962540
+
+IoU details: _1920_1850_1850_1920__0.9635416666666666
+_852_922_852_922__0.9240780911062907
+_0_0_0_0__1
+

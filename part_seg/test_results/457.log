@@ -1,0 +1,12 @@
+Total Point: 2582
+
+Ground Truth: Rocket
+Predict: Skateboard
+
+Accuracy: 0.697909
+IoU: 0.232636
+
+IoU details: _2582_1802_1802_2582__0.6979085979860573
+_0_664_0_664__0.0
+_0_116_0_116__0.0
+
