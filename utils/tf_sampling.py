@@ -189,7 +189,21 @@ def my_point_sample_featured(sess, points, labels, n_samples, item_id, k, points
     return sample_point
 
 def make_sample_file(points, sample_point, left_point, item, method):
-    if item != -1 :
+    if type(item) == str:
+        sampled_file = open(os.path.join(SAMPLE_PATH, '%s_%s_%sp_sample.xyzrgb') % (method, item, len(sample_point)), 'w')
+        for i in range(0, len(points)):
+            log_string(sampled_file, '%s %s %s 0 0 1' % (
+                points[i][0],
+                points[i][1],
+                points[i][2],
+            ))
+        for i in range(0, len(sample_point)):
+            log_string(sampled_file, '%s %s %s 1 0 0' % (
+                sample_point[i][0],
+                sample_point[i][1],
+                sample_point[i][2],
+            ))
+    elif item != -1 :
         sampled_file = open(os.path.join(SAMPLE_PATH, '%s_%s_%sp_sample.xyzrgb') % (method, item, len(sample_point)), 'w')
         for i in range(0, len(left_point)):
             log_string(sampled_file, '%s %s %s 0 0 1' % (
