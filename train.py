@@ -21,7 +21,7 @@ tf.ConfigProto = tf.compat.v1.ConfigProto
 tf.Session = tf.compat.v1.Session
 tf.summary = tf.compat.v1.summary
 tf.global_variables_initializer = tf.compat.v1.global_variables_initializer
-from tf_sampling import the_first_n_visu, farthest_point_sample, my_point_sample, my_point_sample_neighbor
+from tf_sampling import the_first_n_visu, farthest_point_sample, my_point_sample, my_point_sample_neighbor, my_point_sample_featured
 from scipy.spatial import distance
 
 parser = argparse.ArgumentParser()
@@ -184,8 +184,8 @@ def train():
             log_string('**** EPOCH %03d ****' % (epoch))
             sys.stdout.flush()
              
-            train_one_epoch(sess, ops, train_writer)
-            eval_one_epoch(sess, ops, test_writer)
+            train_one_epoch(sess, ops, train_writer, epoch)
+            eval_one_epoch(sess, ops, test_writer, epoch)
             
             # Save the variables to disk.
             if epoch % 10 == 0:
@@ -194,7 +194,7 @@ def train():
 
 
 
-def train_one_epoch(sess, ops, train_writer):
+def train_one_epoch(sess, ops, train_writer, epoch):
     """ ops: dict mapping from string to tf ops """
     is_training = True
     
@@ -223,6 +223,11 @@ def train_one_epoch(sess, ops, train_writer):
                 dist = distance.squareform(distance.pdist(current_data[item]))
                 temp_data[item] = my_point_sample_neighbor(current_data[item], NUM_POINT, item, 128, dist)
             print('MINE NEIGHBOR Completed')
+        elif SAMPLING == 'featured':
+            for item in range(len(current_data)):
+                dist = distance.squareform(distance.pdist(current_data[item]))
+                temp_data[item] = my_point_sample_featured(sess, current_data[item], current_label[item], NUM_POINT, str(epoch) + str(item), 8, dist)
+            print('MINE FEATURED Completed')
         current_data, current_label, _ = provider.shuffle_data(temp_data, np.squeeze(current_label))            
         current_label = np.squeeze(current_label)
         
@@ -256,7 +261,7 @@ def train_one_epoch(sess, ops, train_writer):
         log_string('accuracy: %f' % (total_correct / float(total_seen)))
 
         
-def eval_one_epoch(sess, ops, test_writer):
+def eval_one_epoch(sess, ops, test_writer, epoch):
     """ ops: dict mapping from string to tf ops """
     is_training = False
     total_correct = 0
@@ -284,6 +289,11 @@ def eval_one_epoch(sess, ops, test_writer):
                 dist = distance.squareform(distance.pdist(current_data[item]))
                 temp_data[item] = my_point_sample_neighbor(current_data[item], NUM_POINT, item, 128, dist)
             print('MINE NEIGHBOR Completed')
+        elif SAMPLING == 'featured':
+            for item in range(len(current_data)):
+                dist = distance.squareform(distance.pdist(current_data[item]))
+                temp_data[item] = my_point_sample_featured(sess, current_data[item], current_label[item], NUM_POINT, str(epoch) + str(item), 8, dist)
+            print('MINE FEATURED Completed')
         current_label = np.squeeze(current_label)
         
         file_size = temp_data.shape[0]

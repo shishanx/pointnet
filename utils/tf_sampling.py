@@ -9,6 +9,7 @@ All Rights Reserved. 2017.
 import os
 import numpy as np
 from scipy.spatial import distance
+import feature_extraction
 # BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # sys.path.append(BASE_DIR)
 # sampling_module=tf.load_op_library(os.path.join(BASE_DIR, 'tf_sampling_so.so'))
@@ -149,9 +150,43 @@ def my_point_sample_neighbor(points, n_samples, item, k, points_distance):
         # Update points_left
         points_left = np.setdiff1d(points_left, [selected])
 
-    make_sample_file(points, sample_inds, points_left, item, 'mine_neighbor')
+    # make_sample_file(points, sample_inds, points_left, item, 'mine_neighbor')
 
     return points[sample_inds]
+
+def my_point_sample_featured(sess, points, labels, n_samples, item_id, k, points_distance):
+    """
+    points: [N, 3] array containing the whole point cloud
+    n_samples: samples you want in the sampled point cloud typically << N 
+    """
+    points = np.array(points)
+    
+    # Represent the points by their indices in points
+    # points_left = np.arange(len(points)) # [P]
+
+    # Initialise an array for the sampled indices
+    # sample_inds = np.zeros(n_samples, dtype='int') # [S]
+
+    # Select a point from points by its index, save it
+    # selected = 0
+
+    dist = points_distance
+    neighbor = np.zeros([len(points), k])
+    # selected = np.argmax(dist[0])
+    # sample_inds[0] = selected
+
+    # Delete selected 
+    # points_left = np.setdiff1d(points_left, [selected])# [P - 1]
+
+    for i in range(0, len(points)):
+        k_nearest = np.argsort(dist[i])
+        neighbor[i] = k_nearest[0 : k]
+
+    sample_point = feature_extraction.featured_extract(sess, points, n_samples, neighbor, item_id)
+    if (item_id == "00"):
+        make_sample_file(points, sample_point, [], item_id, 'featured')
+
+    return sample_point
 
 def make_sample_file(points, sample_point, left_point, item, method):
     if item != -1 :
