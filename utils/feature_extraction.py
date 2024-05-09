@@ -20,23 +20,23 @@ def featured_extract(sess, epoch, points, point_num, k):
 
     # print(x_in.shape)
 
-    conv1_w = tf.get_variable(str(epoch) + "_conv1_w", [1, 2 * k + 1, 3, 64], initializer=tf.truncated_normal_initializer(stddev=0.1))
+    conv1_w = tf.get_variable(str(epoch) + "_conv1_w", [1, 2 * k + 1, 3, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
     net = tf.nn.conv2d(x_in, conv1_w, [1, 1, 1, 1], "VALID")
     # print(net.shape)
 
-    conv2_w = tf.get_variable(str(epoch) + "_conv2_w", [1, 1, 64, 64], initializer=tf.truncated_normal_initializer(stddev=0.1))
+    conv2_w = tf.get_variable(str(epoch) + "_conv2_w", [1, 1, 64, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
     net = tf.nn.conv2d(net, conv2_w, [1, 1, 1, 1], "VALID")
     # print(net.shape)
 
-    conv3_w = tf.get_variable(str(epoch) + "_conv3_w", [1, 1, 64, 64], initializer=tf.truncated_normal_initializer(stddev=0.1))
+    conv3_w = tf.get_variable(str(epoch) + "_conv3_w", [1, 1, 64, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
     net = tf.nn.conv2d(net, conv3_w, [1, 1, 1, 1], "VALID")
     # print(net.shape)
 
-    conv4_w = tf.get_variable(str(epoch) + "_conv4_w", [1, 1, 64, 128], initializer=tf.truncated_normal_initializer(stddev=0.1))
+    conv4_w = tf.get_variable(str(epoch) + "_conv4_w", [1, 1, 64, 128], initializer=tf.compat.v1.keras.initializers.glorot_normal())
     net = tf.nn.conv2d(net, conv4_w, [1, 1, 1, 1], "VALID")
     # print(net.shape)
 
-    conv5_w = tf.get_variable(str(epoch) + "_conv5_w", [1, 1, 128, 1024], initializer=tf.truncated_normal_initializer(stddev=0.1))
+    conv5_w = tf.get_variable(str(epoch) + "_conv5_w", [1, 1, 128, 1024], initializer=tf.compat.v1.keras.initializers.glorot_normal())
     net = tf.nn.conv2d(net, conv5_w, [1, 1, 1, 1], "VALID")
     # print(net.shape)
 
@@ -48,17 +48,17 @@ def featured_extract(sess, epoch, points, point_num, k):
     net = tf.reshape(net, [item_num, point_num, -1])
     # print(net.shape)
 
-    fc1_w = tf.get_variable(str(epoch) + "_fc1_w", [1024, 512], initializer=tf.truncated_normal_initializer(stddev=0.1))
+    fc1_w = tf.get_variable(str(epoch) + "_fc1_w", [1024, 512], initializer=tf.compat.v1.keras.initializers.glorot_normal())
     net = tf.matmul(net, fc1_w)
     # print(net.shape)
 
     net = tf.nn.dropout(net, 0.7)
-    fc2_w = tf.get_variable(str(epoch) + "_fc2_w", [512, 256], initializer=tf.truncated_normal_initializer(stddev=0.1))
+    fc2_w = tf.get_variable(str(epoch) + "_fc2_w", [512, 256], initializer=tf.compat.v1.keras.initializers.glorot_normal())
     net = tf.matmul(net, fc2_w)
     # print(net.shape)
 
     net = tf.nn.dropout(net, 0.7)
-    fc3_w = tf.get_variable(str(epoch) + "_fc3_w", [256, 3], initializer=tf.truncated_normal_initializer(stddev=0.1))
+    fc3_w = tf.get_variable(str(epoch) + "_fc3_w", [256, 3], initializer=tf.compat.v1.keras.initializers.glorot_normal())
     net = tf.matmul(net, fc3_w)
 
     # print(net)
