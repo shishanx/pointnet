@@ -24,6 +24,7 @@ tf.global_variables_initializer = tf.compat.v1.global_variables_initializer
 from tf_sampling import the_first_n_visu, farthest_point_sample, my_point_sample, my_point_sample_neighbor, my_point_sample_featured
 from scipy.spatial import distance
 
+# python train.py --num_point=128 --max_epoch=100 --sample=featured --gpu=1
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpu', type=int, default=0, help='GPU to use [default: GPU 0]')
 parser.add_argument('--model', default='pointnet_cls', help='Model name: pointnet_cls or pointnet_cls_basic [default: pointnet_cls]')
@@ -224,6 +225,11 @@ def train_one_epoch(sess, ops, train_writer, epoch):
                 temp_data[item] = my_point_sample_neighbor(current_data[item], NUM_POINT, item, 128, dist)
             print('MINE NEIGHBOR Completed')
         elif SAMPLING == 'featured':
+            # temp_data = np.zeros((len(current_data), 16, 3))
+            # for item in range(len(current_data)):
+            #     print(item)
+            #     temp_data[item] = farthest_point_sample(current_data[item], 16, item)
+            # print("fps completed")
             temp_data = my_point_sample_featured(sess, str(epoch) + str(fn), current_data, NUM_POINT, 8)
             print('MINE FEATURED Completed')
         current_data, current_label, _ = provider.shuffle_data(temp_data, np.squeeze(current_label))            
@@ -288,6 +294,11 @@ def eval_one_epoch(sess, ops, test_writer, epoch):
                 temp_data[item] = my_point_sample_neighbor(current_data[item], NUM_POINT, item, 128, dist)
             print('MINE NEIGHBOR Completed')
         elif SAMPLING == 'featured':
+            # temp_data = np.zeros((len(current_data), 16, 3))
+            # for item in range(len(current_data)):
+            #     print(item)
+            #     temp_data[item] = farthest_point_sample(current_data[item], 16, item)
+            # print("fps completed")
             temp_data = my_point_sample_featured(sess, "eval" + str(epoch) + str(fn), current_data, NUM_POINT, 8)
             print('MINE FEATURED Completed')
         current_label = np.squeeze(current_label)
