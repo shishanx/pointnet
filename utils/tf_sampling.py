@@ -184,7 +184,7 @@ def my_point_sample_featured(sess, epoch, points, n_samples, k):
 
 def make_sample_file(points, sample_point, left_point, item, method):
     if type(item) == str:
-        sampled_file = open(os.path.join(SAMPLE_PATH, '%s_%s_%sp_sample.xyzrgb') % (method, item, len(sample_point)), 'w')
+        sampled_file = open(os.path.join(SAMPLE_PATH, '%s_%s_%sp_sample.xyzrgb') % (method, item, len(sample_point[0])), 'w')
         for i in range(0, len(points)):
             log_string(sampled_file, '%s %s %s 0 0 1' % (
                 points[i][0],
