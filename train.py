@@ -224,9 +224,7 @@ def train_one_epoch(sess, ops, train_writer, epoch):
                 temp_data[item] = my_point_sample_neighbor(current_data[item], NUM_POINT, item, 128, dist)
             print('MINE NEIGHBOR Completed')
         elif SAMPLING == 'featured':
-            for item in range(len(current_data)):
-                dist = distance.squareform(distance.pdist(current_data[item]))
-                temp_data[item] = my_point_sample_featured(sess, current_data[item], current_label[item], NUM_POINT, str(epoch) + str(item), 8, dist)
+            temp_data = my_point_sample_featured(sess, str(epoch) + str(fn), current_data, NUM_POINT, 8)
             print('MINE FEATURED Completed')
         current_data, current_label, _ = provider.shuffle_data(temp_data, np.squeeze(current_label))            
         current_label = np.squeeze(current_label)
@@ -290,9 +288,7 @@ def eval_one_epoch(sess, ops, test_writer, epoch):
                 temp_data[item] = my_point_sample_neighbor(current_data[item], NUM_POINT, item, 128, dist)
             print('MINE NEIGHBOR Completed')
         elif SAMPLING == 'featured':
-            for item in range(len(current_data)):
-                dist = distance.squareform(distance.pdist(current_data[item]))
-                temp_data[item] = my_point_sample_featured(sess, current_data[item], current_label[item], NUM_POINT, str(epoch) + str(item), 8, dist)
+            temp_data = my_point_sample_featured(sess, "eval" + str(epoch) + str(fn), current_data, NUM_POINT, 8)
             print('MINE FEATURED Completed')
         current_label = np.squeeze(current_label)
         
