@@ -225,12 +225,12 @@ def train_one_epoch(sess, ops, train_writer, epoch):
                 temp_data[item] = my_point_sample_neighbor(current_data[item], NUM_POINT, item, 128, dist)
             print('MINE NEIGHBOR Completed')
         elif SAMPLING == 'featured':
-            # temp_data = np.zeros((len(current_data), 16, 3))
-            # for item in range(len(current_data)):
-            #     print(item)
-            #     temp_data[item] = farthest_point_sample(current_data[item], 16, item)
-            # print("fps completed")
-            temp_data = my_point_sample_featured(sess, str(epoch) + str(fn), current_data, NUM_POINT, 8)
+            temp_data = np.zeros((len(current_data), 1024, 3))
+            for item in range(len(current_data)):
+                print("fps item: " + str(item), end="\r")
+                temp_data[item] = farthest_point_sample(current_data[item], 1024, item)
+            print("fps completed")
+            temp_data = my_point_sample_featured(sess, str(epoch) + str(fn), temp_data, NUM_POINT, 8)
             print('MINE FEATURED Completed')
         current_data, current_label, _ = provider.shuffle_data(temp_data, np.squeeze(current_label))            
         current_label = np.squeeze(current_label)
@@ -294,12 +294,12 @@ def eval_one_epoch(sess, ops, test_writer, epoch):
                 temp_data[item] = my_point_sample_neighbor(current_data[item], NUM_POINT, item, 128, dist)
             print('MINE NEIGHBOR Completed')
         elif SAMPLING == 'featured':
-            # temp_data = np.zeros((len(current_data), 16, 3))
-            # for item in range(len(current_data)):
-            #     print(item)
-            #     temp_data[item] = farthest_point_sample(current_data[item], 16, item)
-            # print("fps completed")
-            temp_data = my_point_sample_featured(sess, "eval" + str(epoch) + str(fn), current_data, NUM_POINT, 8)
+            temp_data = np.zeros((len(current_data), 1024, 3))
+            for item in range(len(current_data)):
+                print("fps item: " + str(item), end="\r")
+                temp_data[item] = farthest_point_sample(current_data[item], 1024, item)
+            print("fps completed")
+            temp_data = my_point_sample_featured(sess, "eval" + str(epoch) + str(fn), temp_data, NUM_POINT, 8)
             print('MINE FEATURED Completed')
         current_label = np.squeeze(current_label)
         

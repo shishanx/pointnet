@@ -116,10 +116,12 @@ def featured_extract(sess, epoch, points, point_num, k):
     net_result = sess.run(net, feed_dict={x_in: xtest})
     net_result = np.reshape(net_result, [item_num, item_point_num])
     result = np.zeros([item_num, point_num, 3])
+    result_index = np.zeros([item_num, point_num])
     for i in range(len(net_result)):
         score_sort = np.argsort(net_result[i])
         first_n_score = score_sort[0 : point_num]
+        result_index[i] = first_n_score
         for j in range(len(first_n_score)):
             result[i][j] = points[i][first_n_score[j]]
     # print(item_id)
-    return result
+    return result, result_index

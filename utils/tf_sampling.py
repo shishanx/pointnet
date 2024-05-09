@@ -176,9 +176,9 @@ def my_point_sample_featured(sess, epoch, points, n_samples, k):
     # points_left = np.setdiff1d(points_left, [selected])# [P - 1]
 
 
-    sample_point = feature_extraction.featured_extract(sess, epoch, points, n_samples, k)
+    sample_point, sample_index = feature_extraction.featured_extract(sess, epoch, points, n_samples, k)
     if (epoch == "00"):
-        make_sample_file(points[0], sample_point, [], epoch, 'featured')
+        make_sample_file(points[0], sample_index, [], epoch, 'featured')
 
     return sample_point
 
@@ -186,17 +186,18 @@ def make_sample_file(points, sample_point, left_point, item, method):
     if type(item) == str:
         sampled_file = open(os.path.join(SAMPLE_PATH, '%s_%s_%sp_sample.xyzrgb') % (method, item, len(sample_point[0])), 'w')
         for i in range(len(points)):
-            log_string(sampled_file, '%s %s %s 0 0 1' % (
-                points[i][0],
-                points[i][1],
-                points[i][2],
-            ))
-        for i in range(len(sample_point[0])):
-            log_string(sampled_file, '%s %s %s 1 0 0' % (
-                sample_point[0][i][0],
-                sample_point[0][i][1],
-                sample_point[0][i][2],
-            ))
+            if i in sample_point[0]:
+                log_string(sampled_file, '%s %s %s 1 0 0' % (
+                    points[i][0],
+                    points[i][1],
+                    points[i][2],
+                ))
+            else:
+                log_string(sampled_file, '%s %s %s 0 0 1' % (
+                    points[i][0],
+                    points[i][1],
+                    points[i][2],
+                ))
     elif item != -1 :
         sampled_file = open(os.path.join(SAMPLE_PATH, '%s_%s_%sp_sample.xyzrgb') % (method, item, len(sample_point)), 'w')
         for i in range(0, len(left_point)):
