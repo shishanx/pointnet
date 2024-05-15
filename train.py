@@ -297,7 +297,7 @@ def eval_one_epoch(sess, ops, test_writer, epoch):
             print('MINE NEIGHBOR Completed')
         elif SAMPLING == 'featured':
             item_num = len(current_data)
-            batch_num = 2
+            batch_num = 256
             for i in range(batch_num):
                 start_idx = i * item_num // batch_num
                 end_idx = (i + 1) * item_num // batch_num
