@@ -121,12 +121,12 @@ def eval_one_epoch(sess, ops, num_votes=1, topk=1):
                 dist = distance.squareform(distance.pdist(current_data[item]))
                 temp_data[item] = my_point_sample_neighbor(current_data[item], NUM_POINT, item, 128, dist)
         elif SAMPLING == 'featured':
-            temp_data = np.zeros((len(current_data), 1024, 3))
-            for item in range(len(current_data)):
-                print("fps item: " + str(item), end="\r")
-                temp_data[item] = farthest_point_sample(current_data[item], 1024, item)
-            print("fps completed")
-            temp_data = my_point_sample_featured(sess, "eval" + str(-1) + str(fn), temp_data, NUM_POINT, 8)
+            item_num = len(current_data)
+            batch_num = 2
+            for i in range(batch_num):
+                start_idx = i * (item_num // batch_num)
+                end_idx = (i + 1) * (item_num // batch_num)
+                temp_data = temp_data + my_point_sample_featured(sess, "eval" + str(fn), current_data[start_idx : end_idx], NUM_POINT, 8)
         current_label = np.squeeze(current_label)
         print(temp_data.shape)
         

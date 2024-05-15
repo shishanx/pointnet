@@ -177,8 +177,8 @@ def my_point_sample_featured(sess, epoch, points, n_samples, k):
 
 
     sample_point, sample_index = feature_extraction.featured_extract(sess, epoch, points, n_samples, k)
-    if (epoch == "00"):
-        make_sample_file(points[0], sample_index, [], epoch, 'featured')
+    # if (epoch == "000"):
+    make_sample_file(points[0], sample_index, [], epoch, 'featured')
 
     return sample_point
 

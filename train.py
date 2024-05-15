@@ -225,12 +225,14 @@ def train_one_epoch(sess, ops, train_writer, epoch):
                 temp_data[item] = my_point_sample_neighbor(current_data[item], NUM_POINT, item, 128, dist)
             print('MINE NEIGHBOR Completed')
         elif SAMPLING == 'featured':
-            temp_data = np.zeros((len(current_data), 1024, 3))
-            for item in range(len(current_data)):
-                print("fps item: " + str(item), end="\r")
-                temp_data[item] = farthest_point_sample(current_data[item], 1024, item)
-            print("fps completed")
-            temp_data = my_point_sample_featured(sess, str(epoch) + str(fn), temp_data, NUM_POINT, 8)
+            item_num = len(current_data)
+            batch_num = 512
+            temp_data = []
+            for i in range(batch_num):
+                start_idx = i * item_num // batch_num
+                end_idx = (i + 1) * item_num // batch_num
+                temp_data = np.append(temp_data, my_point_sample_featured(sess, str(epoch) + str(fn) + str(i), current_data[start_idx : end_idx], NUM_POINT, 8))
+                print("load: " + str(epoch) + "_" + str(fn) + "_" + str(i))
             print('MINE FEATURED Completed')
         current_data, current_label, _ = provider.shuffle_data(temp_data, np.squeeze(current_label))            
         current_label = np.squeeze(current_label)
@@ -294,12 +296,12 @@ def eval_one_epoch(sess, ops, test_writer, epoch):
                 temp_data[item] = my_point_sample_neighbor(current_data[item], NUM_POINT, item, 128, dist)
             print('MINE NEIGHBOR Completed')
         elif SAMPLING == 'featured':
-            temp_data = np.zeros((len(current_data), 1024, 3))
-            for item in range(len(current_data)):
-                print("fps item: " + str(item), end="\r")
-                temp_data[item] = farthest_point_sample(current_data[item], 1024, item)
-            print("fps completed")
-            temp_data = my_point_sample_featured(sess, "eval" + str(epoch) + str(fn), temp_data, NUM_POINT, 8)
+            item_num = len(current_data)
+            batch_num = 2
+            for i in range(batch_num):
+                start_idx = i * item_num // batch_num
+                end_idx = (i + 1) * item_num // batch_num
+                temp_data = temp_data + my_point_sample_featured(sess, str(epoch) + str(fn), current_data[start_idx : end_idx], NUM_POINT, 8)
             print('MINE FEATURED Completed')
         current_label = np.squeeze(current_label)
         
