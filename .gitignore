@@ -2,3 +2,4 @@ log
 dump
 __pycache__
 util\__pycache__
+mydel\__pycache__
