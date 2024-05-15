@@ -119,6 +119,75 @@ def get_bn_decay(batch):
     return bn_decay
 
 def train():
+    with tf.Graph().as_default() as g:
+        item_num = 1
+        item_point_num = 2048
+        neighbor_num = 8
+        x_in = tf.placeholder("float", [item_num, item_point_num, 2 * neighbor_num + 1, 3])
+        # x = tf.reshape(x_in, [item_num, 2 * neighbor_num + 1, 3, 1])
+
+        # print(x_in.shape)
+
+        conv1_w = tf.get_variable("conv1_w", [1, 2 * neighbor_num + 1, 3, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.nn.conv2d(x_in, conv1_w, [1, 1, 1, 1], "VALID")
+        net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn1')
+        net = tf.nn.relu(net)
+        # print(net.shape)
+
+        # conv2_w = tf.get_variable("_conv2_w", [1, 1, 64, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        # net = tf.nn.conv2d(net, conv2_w, [1, 1, 1, 1], "VALID")
+        # net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn2')
+        # net = tf.nn.relu(net)
+        # # print(net.shape)
+
+        # conv3_w = tf.get_variable("_conv3_w", [1, 1, 64, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        # net = tf.nn.conv2d(net, conv3_w, [1, 1, 1, 1], "VALID")
+        # net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn3')
+        # net = tf.nn.relu(net)
+        # # print(net.shape)
+
+        conv4_w = tf.get_variable("conv4_w", [1, 1, 64, 128], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.nn.conv2d(net, conv4_w, [1, 1, 1, 1], "VALID")
+        net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn4')
+        net = tf.nn.relu(net)
+        # print(net.shape)
+
+        conv5_w = tf.get_variable("conv5_w", [1, 1, 128, 1024], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.nn.conv2d(net, conv5_w, [1, 1, 1, 1], "VALID")
+        net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn5')
+        net = tf.nn.relu(net)
+        # print(net.shape)
+
+        max_pool_2d = tf.keras.layers.MaxPooling2D(pool_size=(2 * neighbor_num + 1, 1), strides=(1, 1), padding="VALID", data_format="channels_last")
+        max_pool_2d(net)
+        # net = tf.nn.max_pool(net, [item_num, 2 * k + 1, 1, 1], [1, 1, 1, 1], padding='VALID')
+        # print(net.shape)
+
+        net = tf.reshape(net, [item_num, item_point_num, -1])
+        # print(net.shape)
+
+        fc1_w = tf.get_variable("fc1_w", [1024, 512], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.matmul(net, fc1_w)
+        net = tf_util.batch_norm_for_fc(net, tf.constant(True), bn_decay=True, scope='bn6')
+        net = tf.nn.relu(net)
+        # print(net.shape)
+
+        net = tf.nn.dropout(net, 0.7)
+        fc2_w = tf.get_variable("fc2_w", [512, 256], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.matmul(net, fc2_w)
+        net = tf_util.batch_norm_for_fc(net, tf.constant(True), bn_decay=True, scope='bn7')
+        net = tf.nn.relu(net)
+        # print(net.shape)
+
+        net = tf.nn.dropout(net, 0.7)
+        fc3_w = tf.get_variable("fc3_w", [256, 1], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.matmul(net, fc3_w)
+        net = tf_util.batch_norm_for_fc(net, tf.constant(True), bn_decay=True, scope='bn8')
+        net = tf.nn.relu(net)
+        sess1 = tf.Session(graph=g)
+        init = tf.global_variables_initializer()
+        sess1.run(init)
+
     with tf.Graph().as_default():
         with tf.device('/gpu:'+str(GPU_INDEX)):
             pointclouds_pl, labels_pl = MODEL.placeholder_inputs(BATCH_SIZE, NUM_POINT)
@@ -180,15 +249,17 @@ def train():
                'loss': loss,#
                'train_op': train_op,#
                'merged': merged,#
-               'step': batch}#
+               'step': batch,
+               'x_in': x_in,
+               'net': net}#
 
         for epoch in range(MAX_EPOCH):
             log_string(time.asctime(time.localtime(time.time())))
             log_string('**** EPOCH %03d ****' % (epoch))
             sys.stdout.flush()
              
-            train_one_epoch(sess, ops, train_writer, epoch)
-            eval_one_epoch(sess, ops, test_writer, epoch)
+            train_one_epoch([sess, sess1], ops, train_writer, epoch)
+            eval_one_epoch([sess, sess1], ops, test_writer, epoch)
             
             # Save the variables to disk.
             if epoch % 10 == 0:
@@ -228,12 +299,14 @@ def train_one_epoch(sess, ops, train_writer, epoch):
             print('MINE NEIGHBOR Completed')
         elif SAMPLING == 'featured':
             item_num = len(current_data)
-            batch_num = SAMPLE_BATCH_NUM
-            temp_data = []
+            batch_num = item_num
+            temp_data = np.empty([0, NUM_POINT, 3], float)
             for i in range(batch_num):
-                start_idx = i * item_num // batch_num
-                end_idx = (i + 1) * item_num // batch_num
-                temp_data = np.append(temp_data, my_point_sample_featured(sess, str(epoch) + "_" + str(fn) + "_" + str(i), current_data[start_idx : end_idx], NUM_POINT, 8))
+                start_idx = i * (item_num // batch_num)
+                end_idx = (i + 1) * (item_num // batch_num)
+                temp = my_point_sample_featured(sess[1], ops, str(epoch) + "_" + str(fn) + "_" + str(i), current_data[start_idx : end_idx], NUM_POINT, 8)
+                # temp = np.reshape(temp, [NUM_POINT, 3])
+                temp_data = np.append(temp_data, temp, axis=0)
                 # print("load: " + str(epoch) + "_" + str(fn) + "_" + str(i))
             print('MINE FEATURED Completed')
         current_data, current_label, _ = provider.shuffle_data(temp_data, np.squeeze(current_label))            
@@ -256,7 +329,7 @@ def train_one_epoch(sess, ops, train_writer, epoch):
             feed_dict = {ops['pointclouds_pl']: jittered_data,
                          ops['labels_pl']: current_label[start_idx:end_idx],
                          ops['is_training_pl']: is_training,}
-            summary, step, _, loss_val, pred_val = sess.run([ops['merged'], ops['step'],
+            summary, step, _, loss_val, pred_val = sess[0].run([ops['merged'], ops['step'],
                 ops['train_op'], ops['loss'], ops['pred']], feed_dict=feed_dict)
             train_writer.add_summary(summary, step)
             pred_val = np.argmax(pred_val, 1)
@@ -299,11 +372,14 @@ def eval_one_epoch(sess, ops, test_writer, epoch):
             print('MINE NEIGHBOR Completed')
         elif SAMPLING == 'featured':
             item_num = len(current_data)
-            batch_num = SAMPLE_BATCH_NUM
+            batch_num = item_num
+            temp_data = np.empty([0, NUM_POINT, 3], float)
             for i in range(batch_num):
-                start_idx = i * item_num // batch_num
-                end_idx = (i + 1) * item_num // batch_num
-                temp_data = temp_data + my_point_sample_featured(sess, str(epoch) + str(fn), current_data[start_idx : end_idx], NUM_POINT, 8)
+                start_idx = i * (item_num // batch_num)
+                end_idx = (i + 1) * (item_num // batch_num)
+                temp = my_point_sample_featured(sess[1], ops, "eval_one" + "_" + str(fn) + "_" + str(i), current_data[start_idx : end_idx], NUM_POINT, 8)
+                # temp = np.reshape(temp, [NUM_POINT, 3])
+                temp_data = np.append(temp_data, temp, axis=0)
             print('MINE FEATURED Completed')
         current_label = np.squeeze(current_label)
         
@@ -317,7 +393,7 @@ def eval_one_epoch(sess, ops, test_writer, epoch):
             feed_dict = {ops['pointclouds_pl']: temp_data[start_idx:end_idx, :, :],
                          ops['labels_pl']: current_label[start_idx:end_idx],
                          ops['is_training_pl']: is_training}
-            summary, step, loss_val, pred_val = sess.run([ops['merged'], ops['step'],
+            summary, step, loss_val, pred_val = sess[0].run([ops['merged'], ops['step'],
                 ops['loss'], ops['pred']], feed_dict=feed_dict)
             pred_val = np.argmax(pred_val, 1)
             correct = np.sum(pred_val == current_label[start_idx:end_idx])

@@ -154,7 +154,7 @@ def my_point_sample_neighbor(points, n_samples, item, k, points_distance):
 
     return points[sample_inds]
 
-def my_point_sample_featured(sess, epoch, points, n_samples, k):
+def my_point_sample_featured(sess, ops, epoch, points, n_samples, k):
     """
     points: [N, 3] array containing the whole point cloud
     n_samples: samples you want in the sampled point cloud typically << N 
@@ -176,7 +176,7 @@ def my_point_sample_featured(sess, epoch, points, n_samples, k):
     # points_left = np.setdiff1d(points_left, [selected])# [P - 1]
 
 
-    sample_point, sample_index = feature_extraction.featured_extract(sess, epoch, points, n_samples, k)
+    sample_point, sample_index = feature_extraction.featured_extract(sess, ops, epoch, points, n_samples, k)
     # if (epoch == "000"):
     make_sample_file(points[0], sample_index, [], epoch, 'featured')
 

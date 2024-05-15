@@ -7,6 +7,7 @@ import time
 import os
 import scipy.misc
 import sys
+import tf_util
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
 sys.path.append(os.path.join(BASE_DIR, 'models'))
@@ -62,6 +63,74 @@ def log_string(out_str):
 
 def evaluate(num_votes):
     is_training = False
+    with tf.Graph().as_default() as g:
+        item_num = 1
+        item_point_num = 2048
+        neighbor_num = 8
+        x_in = tf.placeholder("float", [item_num, item_point_num, 2 * neighbor_num + 1, 3])
+        # x = tf.reshape(x_in, [item_num, 2 * neighbor_num + 1, 3, 1])
+
+        # print(x_in.shape)
+
+        conv1_w = tf.get_variable("conv1_w", [1, 2 * neighbor_num + 1, 3, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.nn.conv2d(x_in, conv1_w, [1, 1, 1, 1], "VALID")
+        net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn1')
+        net = tf.nn.relu(net)
+        # print(net.shape)
+
+        # conv2_w = tf.get_variable("_conv2_w", [1, 1, 64, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        # net = tf.nn.conv2d(net, conv2_w, [1, 1, 1, 1], "VALID")
+        # net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn2')
+        # net = tf.nn.relu(net)
+        # # print(net.shape)
+
+        # conv3_w = tf.get_variable("_conv3_w", [1, 1, 64, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        # net = tf.nn.conv2d(net, conv3_w, [1, 1, 1, 1], "VALID")
+        # net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn3')
+        # net = tf.nn.relu(net)
+        # # print(net.shape)
+
+        conv4_w = tf.get_variable("conv4_w", [1, 1, 64, 128], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.nn.conv2d(net, conv4_w, [1, 1, 1, 1], "VALID")
+        net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn4')
+        net = tf.nn.relu(net)
+        # print(net.shape)
+
+        conv5_w = tf.get_variable("conv5_w", [1, 1, 128, 1024], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.nn.conv2d(net, conv5_w, [1, 1, 1, 1], "VALID")
+        net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn5')
+        net = tf.nn.relu(net)
+        # print(net.shape)
+
+        max_pool_2d = tf.keras.layers.MaxPooling2D(pool_size=(2 * neighbor_num + 1, 1), strides=(1, 1), padding="VALID", data_format="channels_last")
+        max_pool_2d(net)
+        # net = tf.nn.max_pool(net, [item_num, 2 * k + 1, 1, 1], [1, 1, 1, 1], padding='VALID')
+        # print(net.shape)
+
+        net = tf.reshape(net, [item_num, item_point_num, -1])
+        # print(net.shape)
+
+        fc1_w = tf.get_variable("fc1_w", [1024, 512], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.matmul(net, fc1_w)
+        net = tf_util.batch_norm_for_fc(net, tf.constant(True), bn_decay=True, scope='bn6')
+        net = tf.nn.relu(net)
+        # print(net.shape)
+
+        net = tf.nn.dropout(net, 0.7)
+        fc2_w = tf.get_variable("fc2_w", [512, 256], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.matmul(net, fc2_w)
+        net = tf_util.batch_norm_for_fc(net, tf.constant(True), bn_decay=True, scope='bn7')
+        net = tf.nn.relu(net)
+        # print(net.shape)
+
+        net = tf.nn.dropout(net, 0.7)
+        fc3_w = tf.get_variable("fc3_w", [256, 1], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.matmul(net, fc3_w)
+        net = tf_util.batch_norm_for_fc(net, tf.constant(True), bn_decay=True, scope='bn8')
+        net = tf.nn.relu(net)
+        sess1 = tf.Session(graph=g)
+        init = tf.global_variables_initializer()
+        sess1.run(init)
      
     with tf.device('/gpu:'+str(GPU_INDEX)):
         pointclouds_pl, labels_pl = MODEL.placeholder_inputs(BATCH_SIZE, NUM_POINT)
@@ -94,7 +163,7 @@ def evaluate(num_votes):
            'pred': pred,
            'loss': loss}
 
-    eval_one_epoch(sess, ops, num_votes)
+    eval_one_epoch([sess, sess1], ops, num_votes)
 
    
 def eval_one_epoch(sess, ops, num_votes=1, topk=1):
@@ -124,13 +193,15 @@ def eval_one_epoch(sess, ops, num_votes=1, topk=1):
                 temp_data[item] = my_point_sample_neighbor(current_data[item], NUM_POINT, item, 128, dist)
         elif SAMPLING == 'featured':
             item_num = len(current_data)
-            batch_num = SAMPLE_BATCH_NUM
+            batch_num = item_num
+            temp_data = np.empty([0, NUM_POINT, 3], float)
             for i in range(batch_num):
                 start_idx = i * (item_num // batch_num)
                 end_idx = (i + 1) * (item_num // batch_num)
-                temp_data = temp_data + my_point_sample_featured(sess, "eval" + str(fn), current_data[start_idx : end_idx], NUM_POINT, 8)
+                temp = my_point_sample_featured(sess[1], ops, "eval" + "_" + str(fn) + "_" + str(i), current_data[start_idx : end_idx], NUM_POINT, 8)
+                # temp = np.reshape(temp, [NUM_POINT, 3])
+                temp_data = np.append(temp_data, temp, axis=0)
         current_label = np.squeeze(current_label)
-        print(temp_data.shape)
         
         file_size = temp_data.shape[0]
         num_batches = file_size // BATCH_SIZE
@@ -151,7 +222,7 @@ def eval_one_epoch(sess, ops, num_votes=1, topk=1):
                 feed_dict = {ops['pointclouds_pl']: rotated_data,
                              ops['labels_pl']: current_label[start_idx:end_idx],
                              ops['is_training_pl']: is_training}
-                loss_val, pred_val = sess.run([ops['loss'], ops['pred']],
+                loss_val, pred_val = sess[0].run([ops['loss'], ops['pred']],
                                           feed_dict=feed_dict)
                 batch_pred_sum += pred_val
                 batch_pred_val = np.argmax(pred_val, 1)
