@@ -27,6 +27,7 @@ parser.add_argument('--model_path', default='log/model.ckpt', help='model checkp
 parser.add_argument('--dump_dir', default='dump', help='dump folder path [dump]')
 parser.add_argument('--visu', action='store_true', help='Whether to dump image for error case [default: False]')
 parser.add_argument('--sample', type=str, default='none', help='Sampling')
+parser.add_argument('--sample_batch_num', type=int, default=256, help='Batch Num during sampling [default: 256]')
 FLAGS = parser.parse_args()
 
 
@@ -35,6 +36,7 @@ NUM_POINT = FLAGS.num_point
 MODEL_PATH = FLAGS.model_path
 GPU_INDEX = FLAGS.gpu
 SAMPLING = FLAGS.sample
+SAMPLE_BATCH_NUM = FLAGS.sample_batch_num
 MODEL = importlib.import_module(FLAGS.model) # import network module
 DUMP_DIR = FLAGS.dump_dir
 if not os.path.exists(DUMP_DIR): os.mkdir(DUMP_DIR)
@@ -122,7 +124,7 @@ def eval_one_epoch(sess, ops, num_votes=1, topk=1):
                 temp_data[item] = my_point_sample_neighbor(current_data[item], NUM_POINT, item, 128, dist)
         elif SAMPLING == 'featured':
             item_num = len(current_data)
-            batch_num = 256
+            batch_num = SAMPLE_BATCH_NUM
             for i in range(batch_num):
                 start_idx = i * (item_num // batch_num)
                 end_idx = (i + 1) * (item_num // batch_num)

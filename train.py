@@ -24,7 +24,7 @@ tf.global_variables_initializer = tf.compat.v1.global_variables_initializer
 from tf_sampling import the_first_n_visu, farthest_point_sample, my_point_sample, my_point_sample_neighbor, my_point_sample_featured
 from scipy.spatial import distance
 
-# python train.py --num_point=128 --max_epoch=100 --sample=featured --gpu=1
+# python train.py --num_point=128 --max_epoch=100 --sample=featured --sample_batch_num=256
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpu', type=int, default=0, help='GPU to use [default: GPU 0]')
 parser.add_argument('--model', default='pointnet_cls', help='Model name: pointnet_cls or pointnet_cls_basic [default: pointnet_cls]')
@@ -38,6 +38,7 @@ parser.add_argument('--optimizer', default='adam', help='adam or momentum [defau
 parser.add_argument('--decay_step', type=int, default=200000, help='Decay step for lr decay [default: 200000]')
 parser.add_argument('--decay_rate', type=float, default=0.7, help='Decay rate for lr decay [default: 0.8]')
 parser.add_argument('--sample', type=str, default='none', help='Sampling')
+parser.add_argument('--sample_batch_num', type=int, default=256, help='Batch Num during sampling [default: 256]')
 FLAGS = parser.parse_args()
 
 
@@ -51,6 +52,7 @@ OPTIMIZER = FLAGS.optimizer
 DECAY_STEP = FLAGS.decay_step
 DECAY_RATE = FLAGS.decay_rate
 SAMPLING = FLAGS.sample
+SAMPLE_BATCH_NUM = FLAGS.sample_batch_num
 
 MODEL = importlib.import_module(FLAGS.model) # import network module
 MODEL_FILE = os.path.join(BASE_DIR, 'models', FLAGS.model+'.py')
@@ -226,7 +228,7 @@ def train_one_epoch(sess, ops, train_writer, epoch):
             print('MINE NEIGHBOR Completed')
         elif SAMPLING == 'featured':
             item_num = len(current_data)
-            batch_num = 256
+            batch_num = SAMPLE_BATCH_NUM
             temp_data = []
             for i in range(batch_num):
                 start_idx = i * item_num // batch_num
@@ -297,7 +299,7 @@ def eval_one_epoch(sess, ops, test_writer, epoch):
             print('MINE NEIGHBOR Completed')
         elif SAMPLING == 'featured':
             item_num = len(current_data)
-            batch_num = 256
+            batch_num = SAMPLE_BATCH_NUM
             for i in range(batch_num):
                 start_idx = i * item_num // batch_num
                 end_idx = (i + 1) * item_num // batch_num
