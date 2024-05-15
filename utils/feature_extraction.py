@@ -93,7 +93,7 @@ def featured_extract(sess, epoch, points, point_num, k):
         item = points[index]
         dist = distance.squareform(distance.pdist(item))
         neighbor = np.zeros([len(item), k])
-        print("item: " + str(index), end="\r")
+        print(str(epoch) + " item: " + str(index), end="\r")
 
         for i in range(len(item)):
             k_nearest = np.argsort(dist[i])

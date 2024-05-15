@@ -226,13 +226,13 @@ def train_one_epoch(sess, ops, train_writer, epoch):
             print('MINE NEIGHBOR Completed')
         elif SAMPLING == 'featured':
             item_num = len(current_data)
-            batch_num = 512
+            batch_num = 256
             temp_data = []
             for i in range(batch_num):
                 start_idx = i * item_num // batch_num
                 end_idx = (i + 1) * item_num // batch_num
-                temp_data = np.append(temp_data, my_point_sample_featured(sess, str(epoch) + str(fn) + str(i), current_data[start_idx : end_idx], NUM_POINT, 8))
-                print("load: " + str(epoch) + "_" + str(fn) + "_" + str(i))
+                temp_data = np.append(temp_data, my_point_sample_featured(sess, str(epoch) + "_" + str(fn) + "_" + str(i), current_data[start_idx : end_idx], NUM_POINT, 8))
+                # print("load: " + str(epoch) + "_" + str(fn) + "_" + str(i))
             print('MINE FEATURED Completed')
         current_data, current_label, _ = provider.shuffle_data(temp_data, np.squeeze(current_label))            
         current_label = np.squeeze(current_label)
