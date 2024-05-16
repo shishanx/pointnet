@@ -262,6 +262,9 @@ def train():
             eval_one_epoch([sess, sess1], ops, test_writer, epoch)
             
             # Save the variables to disk.
+            if epoch % 5 == 0:
+                save_path = saver.save(sess1, os.path.join(LOG_DIR, "sample.ckpt"))
+                log_string("Sampling Model saved in file: %s" % save_path)
             if epoch % 10 == 0:
                 save_path = saver.save(sess, os.path.join(LOG_DIR, "model.ckpt"))
                 log_string("Model saved in file: %s" % save_path)

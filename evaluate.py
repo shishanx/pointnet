@@ -29,6 +29,7 @@ parser.add_argument('--dump_dir', default='dump', help='dump folder path [dump]'
 parser.add_argument('--visu', action='store_true', help='Whether to dump image for error case [default: False]')
 parser.add_argument('--sample', type=str, default='none', help='Sampling')
 parser.add_argument('--sample_batch_num', type=int, default=256, help='Batch Num during sampling [default: 256]')
+parser.add_argument('--sample_path', default='log/sample.ckpt', help='model checkpoint file path [default: log/sample.ckpt]')
 FLAGS = parser.parse_args()
 
 
@@ -38,6 +39,7 @@ MODEL_PATH = FLAGS.model_path
 GPU_INDEX = FLAGS.gpu
 SAMPLING = FLAGS.sample
 SAMPLE_BATCH_NUM = FLAGS.sample_batch_num
+SAMPLE_PATH = FLAGS.sample_path
 MODEL = importlib.import_module(FLAGS.model) # import network module
 DUMP_DIR = FLAGS.dump_dir
 if not os.path.exists(DUMP_DIR): os.mkdir(DUMP_DIR)
@@ -63,74 +65,6 @@ def log_string(out_str):
 
 def evaluate(num_votes):
     is_training = False
-    with tf.Graph().as_default() as g:
-        item_num = 1
-        item_point_num = 2048
-        neighbor_num = 8
-        x_in = tf.placeholder("float", [item_num, item_point_num, 2 * neighbor_num + 1, 3])
-        # x = tf.reshape(x_in, [item_num, 2 * neighbor_num + 1, 3, 1])
-
-        # print(x_in.shape)
-
-        conv1_w = tf.get_variable("conv1_w", [1, 2 * neighbor_num + 1, 3, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
-        net = tf.nn.conv2d(x_in, conv1_w, [1, 1, 1, 1], "VALID")
-        net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn1')
-        net = tf.nn.relu(net)
-        # print(net.shape)
-
-        # conv2_w = tf.get_variable("_conv2_w", [1, 1, 64, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
-        # net = tf.nn.conv2d(net, conv2_w, [1, 1, 1, 1], "VALID")
-        # net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn2')
-        # net = tf.nn.relu(net)
-        # # print(net.shape)
-
-        # conv3_w = tf.get_variable("_conv3_w", [1, 1, 64, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
-        # net = tf.nn.conv2d(net, conv3_w, [1, 1, 1, 1], "VALID")
-        # net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn3')
-        # net = tf.nn.relu(net)
-        # # print(net.shape)
-
-        conv4_w = tf.get_variable("conv4_w", [1, 1, 64, 128], initializer=tf.compat.v1.keras.initializers.glorot_normal())
-        net = tf.nn.conv2d(net, conv4_w, [1, 1, 1, 1], "VALID")
-        net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn4')
-        net = tf.nn.relu(net)
-        # print(net.shape)
-
-        conv5_w = tf.get_variable("conv5_w", [1, 1, 128, 1024], initializer=tf.compat.v1.keras.initializers.glorot_normal())
-        net = tf.nn.conv2d(net, conv5_w, [1, 1, 1, 1], "VALID")
-        net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn5')
-        net = tf.nn.relu(net)
-        # print(net.shape)
-
-        max_pool_2d = tf.keras.layers.MaxPooling2D(pool_size=(2 * neighbor_num + 1, 1), strides=(1, 1), padding="VALID", data_format="channels_last")
-        max_pool_2d(net)
-        # net = tf.nn.max_pool(net, [item_num, 2 * k + 1, 1, 1], [1, 1, 1, 1], padding='VALID')
-        # print(net.shape)
-
-        net = tf.reshape(net, [item_num, item_point_num, -1])
-        # print(net.shape)
-
-        fc1_w = tf.get_variable("fc1_w", [1024, 512], initializer=tf.compat.v1.keras.initializers.glorot_normal())
-        net = tf.matmul(net, fc1_w)
-        net = tf_util.batch_norm_for_fc(net, tf.constant(True), bn_decay=True, scope='bn6')
-        net = tf.nn.relu(net)
-        # print(net.shape)
-
-        net = tf.nn.dropout(net, 0.7)
-        fc2_w = tf.get_variable("fc2_w", [512, 256], initializer=tf.compat.v1.keras.initializers.glorot_normal())
-        net = tf.matmul(net, fc2_w)
-        net = tf_util.batch_norm_for_fc(net, tf.constant(True), bn_decay=True, scope='bn7')
-        net = tf.nn.relu(net)
-        # print(net.shape)
-
-        net = tf.nn.dropout(net, 0.7)
-        fc3_w = tf.get_variable("fc3_w", [256, 1], initializer=tf.compat.v1.keras.initializers.glorot_normal())
-        net = tf.matmul(net, fc3_w)
-        net = tf_util.batch_norm_for_fc(net, tf.constant(True), bn_decay=True, scope='bn8')
-        net = tf.nn.relu(net)
-        sess1 = tf.Session(graph=g)
-        init = tf.global_variables_initializer()
-        sess1.run(init)
      
     with tf.device('/gpu:'+str(GPU_INDEX)):
         pointclouds_pl, labels_pl = MODEL.placeholder_inputs(BATCH_SIZE, NUM_POINT)
@@ -152,9 +86,11 @@ def evaluate(num_votes):
     config.log_device_placement = True
     tf.Session = tf.compat.v1.Session
     sess = tf.Session(config=config)
+    sess1 = tf.Session(config=config)
 
     # Restore variables from disk.
     saver.restore(sess, MODEL_PATH)
+    saver.restore(sess1, SAMPLE_PATH)
     log_string("Model restored.")
 
     ops = {'pointclouds_pl': pointclouds_pl,
