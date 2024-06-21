@@ -23,6 +23,7 @@ tf.summary = tf.compat.v1.summary
 tf.global_variables_initializer = tf.compat.v1.global_variables_initializer
 from tf_sampling import the_first_n_visu, farthest_point_sample, my_point_sample, my_point_sample_neighbor, my_point_sample_featured
 from scipy.spatial import distance
+from transform_nets import input_transform_net, feature_transform_net
 
 # python train.py --num_point=128 --max_epoch=100 --sample=featured --sample_batch_num=256
 parser = argparse.ArgumentParser()
@@ -125,25 +126,37 @@ def train():
         neighbor_num = 8
         x_in = tf.placeholder("float", [item_num, item_point_num, 2 * neighbor_num + 1, 3])
         # x = tf.reshape(x_in, [item_num, 2 * neighbor_num + 1, 3, 1])
+        bn_decay = None
 
         # print(x_in.shape)
 
+        with tf.variable_scope('transform_net1') as sc:
+            x = tf.reshape(x_in, [item_point_num, 2 * neighbor_num + 1, 3])
+            transform = input_transform_net(x, tf.constant(True), bn_decay, K=3)
+        point_cloud_transformed = tf.matmul(x, transform)
+        input_image = tf.expand_dims(point_cloud_transformed, 0)
+
         conv1_w = tf.get_variable("conv1_w", [1, 2 * neighbor_num + 1, 3, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
-        net = tf.nn.conv2d(x_in, conv1_w, [1, 1, 1, 1], "VALID")
+        net = tf.nn.conv2d(input_image, conv1_w, [1, 1, 1, 1], "VALID")
         net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn1')
         net = tf.nn.relu(net)
         # print(net.shape)
 
-        # conv2_w = tf.get_variable("_conv2_w", [1, 1, 64, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
-        # net = tf.nn.conv2d(net, conv2_w, [1, 1, 1, 1], "VALID")
-        # net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn2')
-        # net = tf.nn.relu(net)
+        conv2_w = tf.get_variable("conv2_w", [1, 1, 64, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.nn.conv2d(net, conv2_w, [1, 1, 1, 1], "VALID")
+        net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn2')
+        net = tf.nn.relu(net)
         # # print(net.shape)
 
-        # conv3_w = tf.get_variable("_conv3_w", [1, 1, 64, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
-        # net = tf.nn.conv2d(net, conv3_w, [1, 1, 1, 1], "VALID")
-        # net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn3')
-        # net = tf.nn.relu(net)
+        with tf.variable_scope('transform_net2') as sc:
+            transform = feature_transform_net(net, tf.constant(True), bn_decay=True, K=64)
+        net_transformed = tf.matmul(tf.squeeze(net, axis=[2]), transform)
+        net_transformed = tf.expand_dims(net_transformed, [2])
+
+        conv3_w = tf.get_variable("conv3_w", [1, 1, 64, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.nn.conv2d(net_transformed, conv3_w, [1, 1, 1, 1], "VALID")
+        net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='bn3')
+        net = tf.nn.relu(net)
         # # print(net.shape)
 
         conv4_w = tf.get_variable("conv4_w", [1, 1, 64, 128], initializer=tf.compat.v1.keras.initializers.glorot_normal())

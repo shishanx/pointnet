@@ -7,7 +7,6 @@ import time
 import os
 import scipy.misc
 import sys
-import tf_util
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
 sys.path.append(os.path.join(BASE_DIR, 'models'))
@@ -15,8 +14,15 @@ sys.path.append(os.path.join(BASE_DIR, 'utils'))
 import provider
 import pc_util
 import imageio
+import tf_util
 from tf_sampling import farthest_point_sample, my_point_sample, my_point_sample_neighbor, my_point_sample_featured
 from scipy.spatial import distance
+from transform_nets import input_transform_net, feature_transform_net
+tf.train = tf.compat.v1.train
+tf.ConfigProto = tf.compat.v1.ConfigProto
+tf.global_variables = tf.compat.v1.global_variables
+tf.global_variables_initializer = tf.compat.v1.global_variables_initializer
+tf.Session = tf.compat.v1.Session
 
 
 parser = argparse.ArgumentParser()
@@ -63,7 +69,7 @@ def log_string(out_str):
     LOG_FOUT.flush()
     print(out_str)
 
-def evaluate(num_votes):
+def evaluate(num_votes, sess1, ops1):
     is_training = False
      
     with tf.device('/gpu:'+str(GPU_INDEX)):
@@ -75,29 +81,26 @@ def evaluate(num_votes):
         loss = MODEL.get_loss(pred, labels_pl, end_points)
         
         # Add ops to save and restore all the variables.
-        tf.train = tf.compat.v1.train
-        saver = tf.train.Saver()
+        saver = tf.train.import_meta_graph('log/model.ckpt.meta')
         
     # Create a session
-    tf.ConfigProto = tf.compat.v1.ConfigProto
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     config.allow_soft_placement = True
     config.log_device_placement = True
-    tf.Session = tf.compat.v1.Session
     sess = tf.Session(config=config)
-    sess1 = tf.Session(config=config)
 
     # Restore variables from disk.
     saver.restore(sess, MODEL_PATH)
-    saver.restore(sess1, SAMPLE_PATH)
     log_string("Model restored.")
 
     ops = {'pointclouds_pl': pointclouds_pl,
            'labels_pl': labels_pl,
            'is_training_pl': is_training_pl,
            'pred': pred,
-           'loss': loss}
+           'loss': loss,
+           'x_in': ops1['x_in'],
+           'net': ops1['net']}
 
     eval_one_epoch([sess, sess1], ops, num_votes)
 
@@ -203,6 +206,92 @@ def eval_one_epoch(sess, ops, num_votes=1, topk=1):
 
 
 if __name__=='__main__':
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    config.allow_soft_placement = True
+    config.log_device_placement = True
+    with tf.Graph().as_default() as g:
+        item_num = 1
+        item_point_num = 2048
+        neighbor_num = 8
+        x_in = tf.placeholder("float", [item_num, item_point_num, 2 * neighbor_num + 1, 3])
+        # x = tf.reshape(x_in, [item_num, 2 * neighbor_num + 1, 3, 1])
+
+        # print(x_in.shape)
+
+        conv1_w = tf.get_variable("conv1_w", [1, 2 * neighbor_num + 1, 3, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.nn.conv2d(x_in, conv1_w, [1, 1, 1, 1], "VALID")
+        net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='eval_bn1')
+        net = tf.nn.relu(net)
+        # print(net.shape)
+
+        conv2_w = tf.get_variable("conv2_w", [1, 1, 64, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.nn.conv2d(net, conv2_w, [1, 1, 1, 1], "VALID")
+        net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='eval_bn2')
+        net = tf.nn.relu(net)
+        # # print(net.shape)
+
+        with tf.variable_scope('transform_net2') as sc:
+            transform = feature_transform_net(net, tf.constant(True), bn_decay=True, K=64)
+        net_transformed = tf.matmul(tf.squeeze(net, axis=[2]), transform)
+        net_transformed = tf.expand_dims(net_transformed, [2])
+
+        conv3_w = tf.get_variable("conv3_w", [1, 1, 64, 64], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.nn.conv2d(net_transformed, conv3_w, [1, 1, 1, 1], "VALID")
+        net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='eval_bn3')
+        # # print(net.shape)
+
+        conv4_w = tf.get_variable("conv4_w", [1, 1, 64, 128], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.nn.conv2d(net, conv4_w, [1, 1, 1, 1], "VALID")
+        net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='eval_bn4')
+        net = tf.nn.relu(net)
+        # print(net.shape)
+
+        conv5_w = tf.get_variable("conv5_w", [1, 1, 128, 1024], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.nn.conv2d(net, conv5_w, [1, 1, 1, 1], "VALID")
+        net = tf_util.batch_norm_for_conv2d(net, tf.constant(True), bn_decay=True, scope='eval_bn5')
+        net = tf.nn.relu(net)
+        # print(net.shape)
+
+        max_pool_2d = tf.keras.layers.MaxPooling2D(pool_size=(2 * neighbor_num + 1, 1), strides=(1, 1), padding="VALID", data_format="channels_last")
+        max_pool_2d(net)
+        # net = tf.nn.max_pool(net, [item_num, 2 * k + 1, 1, 1], [1, 1, 1, 1], padding='VALID')
+        # print(net.shape)
+
+        net = tf.reshape(net, [item_num, item_point_num, -1])
+        # print(net.shape)
+
+        fc1_w = tf.get_variable("fc1_w", [1024, 512], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.matmul(net, fc1_w)
+        net = tf_util.batch_norm_for_fc(net, tf.constant(True), bn_decay=True, scope='eval_bn6')
+        net = tf.nn.relu(net)
+        # print(net.shape)
+
+        net = tf.nn.dropout(net, 0.7)
+        fc2_w = tf.get_variable("fc2_w", [512, 256], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.matmul(net, fc2_w)
+        net = tf_util.batch_norm_for_fc(net, tf.constant(True), bn_decay=True, scope='eval_bn7')
+        net = tf.nn.relu(net)
+        # print(net.shape)
+
+        net = tf.nn.dropout(net, 0.7)
+        fc3_w = tf.get_variable("fc3_w", [256, 1], initializer=tf.compat.v1.keras.initializers.glorot_normal())
+        net = tf.matmul(net, fc3_w)
+        net = tf_util.batch_norm_for_fc(net, tf.constant(True), bn_decay=True, scope='eval_bn8')
+        net = tf.nn.relu(net)
+        ops = {
+            'x_in': x_in,
+            'net': net
+        }
+
+        sess1 = tf.Session(config=config)
+        init = tf.global_variables_initializer()
+        sess1.run(init)
+        with sess1.as_default():
+            saver = tf.train.import_meta_graph('log/sample.ckpt.meta')
+            # saver.restore(sess1, tf.train.latest_checkpoint('/tmp/model-subset/'))
+            saver.restore(sess1, SAMPLE_PATH)
+
     with tf.Graph().as_default():
-        evaluate(num_votes=1)
+        evaluate(num_votes=1, sess1=sess1, ops1=ops)
     LOG_FOUT.close()
